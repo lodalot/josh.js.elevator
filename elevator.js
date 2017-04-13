@@ -28,11 +28,9 @@ var ElevatorManager = function(){
 	};
 	
 	this.RequestElevator = function(elevator){
-		if(elevator.TripCount == 100){
-			var index = this.elevatorsQueue.indexOf(elevator);
-		    if(index > -1) {
-				this.elevatorsQueue.splice(index, 1);
-		    }
+		if(elevator.MaintenanceMode){
+			console.log("Sorry elevator is out of order");
+			return false;
 		}
 		var index = this.elevatorsQueue.indexOf(elevator);
 		if(index > -1) {
@@ -48,6 +46,7 @@ var Elevator = function() {
 	var _floorLevel = 1;
 	var _doorClosed = true;
 	var _occupied = false;
+	var _currentFloor = 0;
 	var _floorCount = 0;
 	var _tripCount = 0;
 	var _maintenanceMode = false;
@@ -61,7 +60,8 @@ var Elevator = function() {
 		get : function () { return _floorLevel; },
 		set : function (value) {
 			if(value !== undefined && value !== null && typeof value === "number"){
-				_floorLevel = value;
+				this._currentFloor = this.CurrentFloor !== undefined ? this.CurrentFloor : 0;
+				this._floorLevel = value;
 			}
 			else{
 				console.log("error selecting the floor level");
@@ -69,10 +69,14 @@ var Elevator = function() {
 		}
 	}
 	
+	this.CurrentFloor = {
+		get : function () { return _currentFloor; },
+	}
+	
 	this.MaintenanceMode = {
 		get : function () { return _maintenanceMode; },
 		set : function (value) {
-			if(value !== undefined && value !== null && typeof value === "number"){
+			if(value !== undefined && value !== null && typeof value === "boolean"){
 				_maintenanceMode = value;
 			}
 			else{
@@ -101,7 +105,7 @@ var Elevator = function() {
 			this._doorClosed = true;
 			this._up = true;
 			this._tripCount ++;
-			console.log("Elevator " + this.Id + " requested at floor " + this.FloorLevel);
+			console.log("Elevator " + this.Id + " requested at floor " + this.FloorLevel + ". Elevator is currently on floor: " + this.CurrentFloor);
 			if(this._tripCount == 100){
 				this._maintenanceMode = true;
 			}

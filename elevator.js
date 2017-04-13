@@ -12,17 +12,13 @@
 
 var ElevatorManager = function(){
 	this.elevatorsQueue = [];
+	
+	// this should compile with node.js
+	// I added a quick brainstorm at the bottom
 
 	var maxFloors = 50;
 	var minFloors = 0;
 	
-	// keep track of floors is has passed and trips
-
-	// elevator floor request	
-		// closest unoccupied elevator comes
-			// unless there is a moving unoccupied either below it or above move in the direction of the requested floor.
-		// 'TRUMPS' - unoccupied elevator already stopped at that floor
-		
 	this.CreateElevator = function(elevator){
 		this.elevatorsQueue.push(elevator);
 	};
@@ -50,27 +46,18 @@ var Elevator = function() {
 	var _floorCount = 0;
 	var _tripCount = 0;
 	var _maintenanceMode = false;
-	// need to report what each floor I'm on
-	// need to report when I open my door or close it
-	// can't proceed passed the top floor
-	// can't proceed below the bootom floor
-	// elevator request can be made at any floor to go to any other floor
 	
 	this.FloorLevel = {
-		get : function () { return _floorLevel; },
+		get : function () { return this._floorLevel; },
 		set : function (value) {
 			if(value !== undefined && value !== null && typeof value === "number"){
-				this._currentFloor = this.CurrentFloor !== undefined ? this.CurrentFloor : 0;
+				this._currentFloor = this._floorLevel; //set the current floor to the last request.. yeah what happens if we started throwing in multiple requests.. but this is basic for now
 				this._floorLevel = value;
 			}
 			else{
 				console.log("error selecting the floor level");
 			}
 		}
-	}
-	
-	this.CurrentFloor = {
-		get : function () { return _currentFloor; },
 	}
 	
 	this.MaintenanceMode = {
@@ -105,7 +92,7 @@ var Elevator = function() {
 			this._doorClosed = true;
 			this._up = true;
 			this._tripCount ++;
-			console.log("Elevator " + this.Id + " requested at floor " + this.FloorLevel + ". Elevator is currently on floor: " + this.CurrentFloor);
+			console.log("Elevator " + this.Id + " requested at floor " + this.FloorLevel + ". Elevator is currently on floor: " + this._currentFloor);
 			if(this._tripCount == 100){
 				this._maintenanceMode = true;
 			}
@@ -125,6 +112,11 @@ var elevator2 = new Elevator();
 elevator2.Id = 2;
 manager.CreateElevator(elevator2);
 
+//create elevator 3
+var elevator3 = new Elevator();
+elevator3.Id = 3;
+manager.CreateElevator(elevator3);
+
 //requesting
 
 elevator1.FloorLevel = 4;
@@ -132,3 +124,22 @@ manager.RequestElevator(elevator1);
 
 elevator2.FloorLevel = 10;
 manager.RequestElevator(elevator2);
+
+elevator3.FloorLevel = 6;
+manager.RequestElevator(elevator3);
+
+
+	// need to calculate floor timing..
+	// during requests we need to know when the elevator was requested and then add some type of weight for how long it takes to travel for each floor.
+	// we could also add in the time it takes for stopping to include opening and closing the doors.
+	// does it take longer for a door to open when more people are riding
+	// multiple people are riding clicking multiple floors
+	
+	// Welp. now that I've had some time to think about this some more I'd probably go a different route
+	///////////////////////////////////////////////////////////////////////////////////////////
+	// Add a floor controller to handle requesting floors and have that manager figure out which
+	// elevator to use instead of the below approach of requesting a floor based on an elevator.
+	
+	// the elevator manager would handle global properties for the floor controller.
+	// definitely need some more queues 
+	

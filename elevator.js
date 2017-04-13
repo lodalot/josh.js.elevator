@@ -12,9 +12,10 @@
 
 var ElevatorManager = function(){
 	this.elevatorsQueue = [];
+
 	var maxFloors = 50;
 	var minFloors = 0;
-	// elevators can only perform 100 trips before shut-down and can't be requested
+	
 	// keep track of floors is has passed and trips
 
 	// elevator floor request	
@@ -27,6 +28,12 @@ var ElevatorManager = function(){
 	};
 	
 	this.RequestElevator = function(elevator){
+		if(elevator.TripCount == 100){
+			var index = this.elevatorsQueue.indexOf(elevator);
+		    if(index > -1) {
+				this.elevatorsQueue.splice(index, 1);
+		    }
+		}
 		var index = this.elevatorsQueue.indexOf(elevator);
 		if(index > -1) {
 			this.elevatorsQueue[index].notify(index);
@@ -35,11 +42,15 @@ var ElevatorManager = function(){
 }
 
 var Elevator = function() {
+	var _id;
 	var _up = false;
 	var _down = false;
 	var _floorLevel = 1;
 	var _doorClosed = true;
 	var _occupied = false;
+	var _floorCount = 0;
+	var _tripCount = 0;
+	var _maintenanceMode = false;
 	// need to report what each floor I'm on
 	// need to report when I open my door or close it
 	// can't proceed passed the top floor
@@ -58,17 +69,62 @@ var Elevator = function() {
 		}
 	}
 	
+	this.MaintenanceMode = {
+		get : function () { return _maintenanceMode; },
+		set : function (value) {
+			if(value !== undefined && value !== null && typeof value === "number"){
+				_maintenanceMode = value;
+			}
+			else{
+				console.log("error");
+			}
+		}
+	}
+	
+	this.Id = {
+		get : function () { return _id; },
+		set : function (value) {
+			if(value !== undefined && value !== null && typeof value === "number"){
+				_id = value; //figured it has to be a number
+			}
+			else{
+				console.log("error adding elevator id");
+			}
+		}
+	}
+
+	
 	return {
 		notify :function (index) {
-			console.log("Elevator " + index + 1 + " requested at floor " + this.FloorLevel);
+			this._floorCount = this._floorCount + this.FloorLevel;
+			this._occupied = true;
+			this._doorClosed = true;
+			this._up = true;
+			this._tripCount ++;
+			console.log("Elevator " + this.Id + " requested at floor " + this.FloorLevel);
+			if(this._tripCount == 100){
+				this._maintenanceMode = true;
+			}
 		} 
 	}
 }
 
 var manager = new ElevatorManager();
 
+//create elevator 1
 var elevator1 = new Elevator();
+elevator1.Id = 1;
 manager.CreateElevator(elevator1);
 
-elevator1.FloorLevel = 1;
+//create elevator 2
+var elevator2 = new Elevator();
+elevator2.Id = 2;
+manager.CreateElevator(elevator2);
+
+//requesting
+
+elevator1.FloorLevel = 4;
 manager.RequestElevator(elevator1);
+
+elevator2.FloorLevel = 10;
+manager.RequestElevator(elevator2);

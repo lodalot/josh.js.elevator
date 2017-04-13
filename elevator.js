@@ -20,18 +20,55 @@ var ElevatorManager = function(){
 	// elevator floor request	
 		// closest unoccupied elevator comes
 			// unless there is a moving unoccupied either below it or above move in the direction of the requested floor.
-		// 'TRUMPS' - unoccupied elevator already stopped at that floo r
+		// 'TRUMPS' - unoccupied elevator already stopped at that floor
+		
+	this.CreateElevator = function(elevator){
+		this.elevatorsQueue.push(elevator);
+	};
+	
+	this.RequestElevator = function(elevator){
+		var index = this.elevatorsQueue.indexOf(elevator);
+		if(index > -1) {
+			this.elevatorsQueue[index].notify(index);
+		}
+	};
 }
 
 var Elevator = function() {
-	var up;
-	var down;
-	var floorLevel;
-	var doorStatus;
-	var occupied;
+	var _up = false;
+	var _down = false;
+	var _floorLevel = 1;
+	var _doorClosed = true;
+	var _occupied = false;
 	// need to report what each floor I'm on
 	// need to report when I open my door or close it
 	// can't proceed passed the top floor
 	// can't proceed below the bootom floor
 	// elevator request can be made at any floor to go to any other floor
+	
+	this.FloorLevel = {
+		get : function () { return _floorLevel; },
+		set : function (value) {
+			if(value !== undefined && value !== null && typeof value === "number"){
+				_floorLevel = value;
+			}
+			else{
+				console.log("error selecting the floor level");
+			}
+		}
+	}
+	
+	return {
+		notify :function (index) {
+			console.log("Elevator " + index + 1 + " requested at floor " + this.FloorLevel);
+		} 
+	}
 }
+
+var manager = new ElevatorManager();
+
+var elevator1 = new Elevator();
+manager.CreateElevator(elevator1);
+
+elevator1.FloorLevel = 1;
+manager.RequestElevator(elevator1);
